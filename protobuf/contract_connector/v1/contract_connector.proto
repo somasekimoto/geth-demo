@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package protobuf.contract_connector.v1;
+
+option go_package = "github.com/somasekimoto/geth-demo/gocode/protobuf/contract_connector/v1;contract_connectorv1";
+
+message ContractConnectRequest {
+    string contract_address = 1;
+    string method_name = 2;
+    string method_params = 3;
+}
+
+message ContractConnectResponse {
+    string result = 1;
+}
+  
+service ContractConnectorService {
+    rpc ContractConnect(ContractConnectRequest) returns (ContractConnectResponse) {}
+}
