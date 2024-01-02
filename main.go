@@ -22,7 +22,9 @@ func (s *ContractConnectServer) ContractConnect(
 	req *connect.Request[contract_connect_v1.ContractConnectRequest],
 ) (*connect.Response[contract_connect_v1.ContractConnectResponse], error) {
 	log.Println("Request headers: ", req.Header())
-	res := connect.NewResponse(&contract_connect_v1.ContractConnectResponse{})
+	res := connect.NewResponse(&contract_connect_v1.ContractConnectResponse{
+		Result: "Hello, world!",
+	})
 	res.Header().Set("Contract-Connect-Version", "v1")
 	return res, nil
 }
