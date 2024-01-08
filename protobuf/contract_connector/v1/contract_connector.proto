@@ -4,16 +4,36 @@ package protobuf.contract_connector.v1;
 
 option go_package = "github.com/somasekimoto/geth-demo/gocode/protobuf/contract_connector/v1;contract_connectorv1";
 
-message ContractConnectRequest {
+message HelloRequest {
     string contract_address = 1;
     string method_name = 2;
     string method_params = 3;
 }
 
-message ContractConnectResponse {
+message HelloResponse {
     string result = 1;
 }
+
+message GreetRequest{}
+message GreetResponse{}
+
+message SetDataRequest{}
+message SetDataResponse{}
+
+message GetDataRequest{}
+message GetDataResponse{}
+
+message GetBalanceRequest{}
+message GetBalanceResponse{}
+
+message WithdrawRequest{}
+message WithdrawResponse{}
   
 service ContractConnectorService {
-    rpc ContractConnect(ContractConnectRequest) returns (ContractConnectResponse) {}
+    rpc Hello(HelloRequest) returns (HelloResponse) {}
+    rpc Greet(GreetRequest) returns (GreetResponse){}
+    rpc SetData(SetDataRequest) returns (SetDataResponse){}
+    rpc GetData(GetDataRequest) returns (GetDataResponse){}
+    rpc GetBalance(GetBalanceRequest) returns (GetBalanceResponse){}
+    rpc Withdraw(WithdrawRequest) returns (WithdrawResponse){}
 }

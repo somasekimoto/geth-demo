@@ -25,20 +25,33 @@ const (
 
 type ContractConnectServer struct{}
 
-func (s *ContractConnectServer) ContractConnect(
-	ctx context.Context,
-	req *connect.Request[contract_connect_v1.ContractConnectRequest],
-) (*connect.Response[contract_connect_v1.ContractConnectResponse], error) {
-	log.Println("Request headers: ", req.Header())
+func getEthClient() (*ethclient.Client, error) {
+	return ethclient.Dial(fmt.Sprintf("http://127.0.0.1:%s", GANACHE_PORT))
+}
 
+func connectContract() (*contracts.Helloworld, error) {
 	// Ethereum クライアントの初期化
-	client, err := ethclient.Dial(fmt.Sprintf("http://127.0.0.1:%s", GANACHE_PORT))
+	client, err := getEthClient()
 	if err != nil {
 		return nil, err
 	}
+	return contracts.NewHelloworld(common.HexToAddress(CONTRACT_ADDRESS), client)
+}
+
+func (s *ContractConnectServer) Hello(
+	ctx context.Context,
+	req *connect.Request[contract_connect_v1.HelloRequest],
+) (*connect.Response[contract_connect_v1.HelloResponse], error) {
+	log.Println("Request headers: ", req.Header())
+
+	// // Ethereum クライアントの初期化
+	// client, err := getEthClient()
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	// スマートコントラクトとの接続
-	conn, err := contracts.NewHelloworld(common.HexToAddress(CONTRACT_ADDRESS), client)
+	conn, err := connectContract()
 	if err != nil {
 		return nil, err
 	}
@@ -51,11 +64,46 @@ func (s *ContractConnectServer) ContractConnect(
 		return nil, err
 	}
 
-	res := connect.NewResponse(&contract_connect_v1.ContractConnectResponse{
+	res := connect.NewResponse(&contract_connect_v1.HelloResponse{
 		Result: reply,
 	})
 	res.Header().Set("Contract-Connect-Version", "v1")
 	return res, nil
+}
+
+func (s *ContractConnectServer) GetBalance(
+	ctx context.Context,
+	req *connect.Request[contract_connect_v1.GetBalanceRequest],
+) (*connect.Response[contract_connect_v1.GetBalanceResponse], error) {
+	return nil, nil
+}
+
+func (s *ContractConnectServer) GetData(
+	ctx context.Context,
+	req *connect.Request[contract_connect_v1.GetDataRequest],
+) (*connect.Response[contract_connect_v1.GetDataResponse], error) {
+	return nil, nil
+}
+
+func (s *ContractConnectServer) Greet(
+	ctx context.Context,
+	req *connect.Request[contract_connect_v1.GreetRequest],
+) (*connect.Response[contract_connect_v1.GreetResponse], error) {
+	return nil, nil
+}
+
+func (s *ContractConnectServer) SetData(
+	ctx context.Context,
+	req *connect.Request[contract_connect_v1.SetDataRequest],
+) (*connect.Response[contract_connect_v1.SetDataResponse], error) {
+	return nil, nil
+}
+
+func (s *ContractConnectServer) Withdraw(
+	ctx context.Context,
+	req *connect.Request[contract_connect_v1.WithdrawRequest],
+) (*connect.Response[contract_connect_v1.WithdrawResponse], error) {
+	return nil, nil
 }
 
 func server() http.Handler {

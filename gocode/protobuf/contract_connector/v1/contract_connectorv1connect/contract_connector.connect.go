@@ -33,21 +33,46 @@ const (
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
-	// ContractConnectorServiceContractConnectProcedure is the fully-qualified name of the
-	// ContractConnectorService's ContractConnect RPC.
-	ContractConnectorServiceContractConnectProcedure = "/protobuf.contract_connector.v1.ContractConnectorService/ContractConnect"
+	// ContractConnectorServiceHelloProcedure is the fully-qualified name of the
+	// ContractConnectorService's Hello RPC.
+	ContractConnectorServiceHelloProcedure = "/protobuf.contract_connector.v1.ContractConnectorService/Hello"
+	// ContractConnectorServiceGreetProcedure is the fully-qualified name of the
+	// ContractConnectorService's Greet RPC.
+	ContractConnectorServiceGreetProcedure = "/protobuf.contract_connector.v1.ContractConnectorService/Greet"
+	// ContractConnectorServiceSetDataProcedure is the fully-qualified name of the
+	// ContractConnectorService's SetData RPC.
+	ContractConnectorServiceSetDataProcedure = "/protobuf.contract_connector.v1.ContractConnectorService/SetData"
+	// ContractConnectorServiceGetDataProcedure is the fully-qualified name of the
+	// ContractConnectorService's GetData RPC.
+	ContractConnectorServiceGetDataProcedure = "/protobuf.contract_connector.v1.ContractConnectorService/GetData"
+	// ContractConnectorServiceGetBalanceProcedure is the fully-qualified name of the
+	// ContractConnectorService's GetBalance RPC.
+	ContractConnectorServiceGetBalanceProcedure = "/protobuf.contract_connector.v1.ContractConnectorService/GetBalance"
+	// ContractConnectorServiceWithdrawProcedure is the fully-qualified name of the
+	// ContractConnectorService's Withdraw RPC.
+	ContractConnectorServiceWithdrawProcedure = "/protobuf.contract_connector.v1.ContractConnectorService/Withdraw"
 )
 
 // These variables are the protoreflect.Descriptor objects for the RPCs defined in this package.
 var (
-	contractConnectorServiceServiceDescriptor               = v1.File_protobuf_contract_connector_v1_contract_connector_proto.Services().ByName("ContractConnectorService")
-	contractConnectorServiceContractConnectMethodDescriptor = contractConnectorServiceServiceDescriptor.Methods().ByName("ContractConnect")
+	contractConnectorServiceServiceDescriptor          = v1.File_protobuf_contract_connector_v1_contract_connector_proto.Services().ByName("ContractConnectorService")
+	contractConnectorServiceHelloMethodDescriptor      = contractConnectorServiceServiceDescriptor.Methods().ByName("Hello")
+	contractConnectorServiceGreetMethodDescriptor      = contractConnectorServiceServiceDescriptor.Methods().ByName("Greet")
+	contractConnectorServiceSetDataMethodDescriptor    = contractConnectorServiceServiceDescriptor.Methods().ByName("SetData")
+	contractConnectorServiceGetDataMethodDescriptor    = contractConnectorServiceServiceDescriptor.Methods().ByName("GetData")
+	contractConnectorServiceGetBalanceMethodDescriptor = contractConnectorServiceServiceDescriptor.Methods().ByName("GetBalance")
+	contractConnectorServiceWithdrawMethodDescriptor   = contractConnectorServiceServiceDescriptor.Methods().ByName("Withdraw")
 )
 
 // ContractConnectorServiceClient is a client for the
 // protobuf.contract_connector.v1.ContractConnectorService service.
 type ContractConnectorServiceClient interface {
-	ContractConnect(context.Context, *connect.Request[v1.ContractConnectRequest]) (*connect.Response[v1.ContractConnectResponse], error)
+	Hello(context.Context, *connect.Request[v1.HelloRequest]) (*connect.Response[v1.HelloResponse], error)
+	Greet(context.Context, *connect.Request[v1.GreetRequest]) (*connect.Response[v1.GreetResponse], error)
+	SetData(context.Context, *connect.Request[v1.SetDataRequest]) (*connect.Response[v1.SetDataResponse], error)
+	GetData(context.Context, *connect.Request[v1.GetDataRequest]) (*connect.Response[v1.GetDataResponse], error)
+	GetBalance(context.Context, *connect.Request[v1.GetBalanceRequest]) (*connect.Response[v1.GetBalanceResponse], error)
+	Withdraw(context.Context, *connect.Request[v1.WithdrawRequest]) (*connect.Response[v1.WithdrawResponse], error)
 }
 
 // NewContractConnectorServiceClient constructs a client for the
@@ -61,10 +86,40 @@ type ContractConnectorServiceClient interface {
 func NewContractConnectorServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) ContractConnectorServiceClient {
 	baseURL = strings.TrimRight(baseURL, "/")
 	return &contractConnectorServiceClient{
-		contractConnect: connect.NewClient[v1.ContractConnectRequest, v1.ContractConnectResponse](
+		hello: connect.NewClient[v1.HelloRequest, v1.HelloResponse](
 			httpClient,
-			baseURL+ContractConnectorServiceContractConnectProcedure,
-			connect.WithSchema(contractConnectorServiceContractConnectMethodDescriptor),
+			baseURL+ContractConnectorServiceHelloProcedure,
+			connect.WithSchema(contractConnectorServiceHelloMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
+		greet: connect.NewClient[v1.GreetRequest, v1.GreetResponse](
+			httpClient,
+			baseURL+ContractConnectorServiceGreetProcedure,
+			connect.WithSchema(contractConnectorServiceGreetMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
+		setData: connect.NewClient[v1.SetDataRequest, v1.SetDataResponse](
+			httpClient,
+			baseURL+ContractConnectorServiceSetDataProcedure,
+			connect.WithSchema(contractConnectorServiceSetDataMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
+		getData: connect.NewClient[v1.GetDataRequest, v1.GetDataResponse](
+			httpClient,
+			baseURL+ContractConnectorServiceGetDataProcedure,
+			connect.WithSchema(contractConnectorServiceGetDataMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
+		getBalance: connect.NewClient[v1.GetBalanceRequest, v1.GetBalanceResponse](
+			httpClient,
+			baseURL+ContractConnectorServiceGetBalanceProcedure,
+			connect.WithSchema(contractConnectorServiceGetBalanceMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
+		withdraw: connect.NewClient[v1.WithdrawRequest, v1.WithdrawResponse](
+			httpClient,
+			baseURL+ContractConnectorServiceWithdrawProcedure,
+			connect.WithSchema(contractConnectorServiceWithdrawMethodDescriptor),
 			connect.WithClientOptions(opts...),
 		),
 	}
@@ -72,18 +127,53 @@ func NewContractConnectorServiceClient(httpClient connect.HTTPClient, baseURL st
 
 // contractConnectorServiceClient implements ContractConnectorServiceClient.
 type contractConnectorServiceClient struct {
-	contractConnect *connect.Client[v1.ContractConnectRequest, v1.ContractConnectResponse]
+	hello      *connect.Client[v1.HelloRequest, v1.HelloResponse]
+	greet      *connect.Client[v1.GreetRequest, v1.GreetResponse]
+	setData    *connect.Client[v1.SetDataRequest, v1.SetDataResponse]
+	getData    *connect.Client[v1.GetDataRequest, v1.GetDataResponse]
+	getBalance *connect.Client[v1.GetBalanceRequest, v1.GetBalanceResponse]
+	withdraw   *connect.Client[v1.WithdrawRequest, v1.WithdrawResponse]
 }
 
-// ContractConnect calls protobuf.contract_connector.v1.ContractConnectorService.ContractConnect.
-func (c *contractConnectorServiceClient) ContractConnect(ctx context.Context, req *connect.Request[v1.ContractConnectRequest]) (*connect.Response[v1.ContractConnectResponse], error) {
-	return c.contractConnect.CallUnary(ctx, req)
+// Hello calls protobuf.contract_connector.v1.ContractConnectorService.Hello.
+func (c *contractConnectorServiceClient) Hello(ctx context.Context, req *connect.Request[v1.HelloRequest]) (*connect.Response[v1.HelloResponse], error) {
+	return c.hello.CallUnary(ctx, req)
+}
+
+// Greet calls protobuf.contract_connector.v1.ContractConnectorService.Greet.
+func (c *contractConnectorServiceClient) Greet(ctx context.Context, req *connect.Request[v1.GreetRequest]) (*connect.Response[v1.GreetResponse], error) {
+	return c.greet.CallUnary(ctx, req)
+}
+
+// SetData calls protobuf.contract_connector.v1.ContractConnectorService.SetData.
+func (c *contractConnectorServiceClient) SetData(ctx context.Context, req *connect.Request[v1.SetDataRequest]) (*connect.Response[v1.SetDataResponse], error) {
+	return c.setData.CallUnary(ctx, req)
+}
+
+// GetData calls protobuf.contract_connector.v1.ContractConnectorService.GetData.
+func (c *contractConnectorServiceClient) GetData(ctx context.Context, req *connect.Request[v1.GetDataRequest]) (*connect.Response[v1.GetDataResponse], error) {
+	return c.getData.CallUnary(ctx, req)
+}
+
+// GetBalance calls protobuf.contract_connector.v1.ContractConnectorService.GetBalance.
+func (c *contractConnectorServiceClient) GetBalance(ctx context.Context, req *connect.Request[v1.GetBalanceRequest]) (*connect.Response[v1.GetBalanceResponse], error) {
+	return c.getBalance.CallUnary(ctx, req)
+}
+
+// Withdraw calls protobuf.contract_connector.v1.ContractConnectorService.Withdraw.
+func (c *contractConnectorServiceClient) Withdraw(ctx context.Context, req *connect.Request[v1.WithdrawRequest]) (*connect.Response[v1.WithdrawResponse], error) {
+	return c.withdraw.CallUnary(ctx, req)
 }
 
 // ContractConnectorServiceHandler is an implementation of the
 // protobuf.contract_connector.v1.ContractConnectorService service.
 type ContractConnectorServiceHandler interface {
-	ContractConnect(context.Context, *connect.Request[v1.ContractConnectRequest]) (*connect.Response[v1.ContractConnectResponse], error)
+	Hello(context.Context, *connect.Request[v1.HelloRequest]) (*connect.Response[v1.HelloResponse], error)
+	Greet(context.Context, *connect.Request[v1.GreetRequest]) (*connect.Response[v1.GreetResponse], error)
+	SetData(context.Context, *connect.Request[v1.SetDataRequest]) (*connect.Response[v1.SetDataResponse], error)
+	GetData(context.Context, *connect.Request[v1.GetDataRequest]) (*connect.Response[v1.GetDataResponse], error)
+	GetBalance(context.Context, *connect.Request[v1.GetBalanceRequest]) (*connect.Response[v1.GetBalanceResponse], error)
+	Withdraw(context.Context, *connect.Request[v1.WithdrawRequest]) (*connect.Response[v1.WithdrawResponse], error)
 }
 
 // NewContractConnectorServiceHandler builds an HTTP handler from the service implementation. It
@@ -92,16 +182,56 @@ type ContractConnectorServiceHandler interface {
 // By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
 // and JSON codecs. They also support gzip compression.
 func NewContractConnectorServiceHandler(svc ContractConnectorServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
-	contractConnectorServiceContractConnectHandler := connect.NewUnaryHandler(
-		ContractConnectorServiceContractConnectProcedure,
-		svc.ContractConnect,
-		connect.WithSchema(contractConnectorServiceContractConnectMethodDescriptor),
+	contractConnectorServiceHelloHandler := connect.NewUnaryHandler(
+		ContractConnectorServiceHelloProcedure,
+		svc.Hello,
+		connect.WithSchema(contractConnectorServiceHelloMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
+	contractConnectorServiceGreetHandler := connect.NewUnaryHandler(
+		ContractConnectorServiceGreetProcedure,
+		svc.Greet,
+		connect.WithSchema(contractConnectorServiceGreetMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
+	contractConnectorServiceSetDataHandler := connect.NewUnaryHandler(
+		ContractConnectorServiceSetDataProcedure,
+		svc.SetData,
+		connect.WithSchema(contractConnectorServiceSetDataMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
+	contractConnectorServiceGetDataHandler := connect.NewUnaryHandler(
+		ContractConnectorServiceGetDataProcedure,
+		svc.GetData,
+		connect.WithSchema(contractConnectorServiceGetDataMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
+	contractConnectorServiceGetBalanceHandler := connect.NewUnaryHandler(
+		ContractConnectorServiceGetBalanceProcedure,
+		svc.GetBalance,
+		connect.WithSchema(contractConnectorServiceGetBalanceMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
+	contractConnectorServiceWithdrawHandler := connect.NewUnaryHandler(
+		ContractConnectorServiceWithdrawProcedure,
+		svc.Withdraw,
+		connect.WithSchema(contractConnectorServiceWithdrawMethodDescriptor),
 		connect.WithHandlerOptions(opts...),
 	)
 	return "/protobuf.contract_connector.v1.ContractConnectorService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
-		case ContractConnectorServiceContractConnectProcedure:
-			contractConnectorServiceContractConnectHandler.ServeHTTP(w, r)
+		case ContractConnectorServiceHelloProcedure:
+			contractConnectorServiceHelloHandler.ServeHTTP(w, r)
+		case ContractConnectorServiceGreetProcedure:
+			contractConnectorServiceGreetHandler.ServeHTTP(w, r)
+		case ContractConnectorServiceSetDataProcedure:
+			contractConnectorServiceSetDataHandler.ServeHTTP(w, r)
+		case ContractConnectorServiceGetDataProcedure:
+			contractConnectorServiceGetDataHandler.ServeHTTP(w, r)
+		case ContractConnectorServiceGetBalanceProcedure:
+			contractConnectorServiceGetBalanceHandler.ServeHTTP(w, r)
+		case ContractConnectorServiceWithdrawProcedure:
+			contractConnectorServiceWithdrawHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -111,6 +241,26 @@ func NewContractConnectorServiceHandler(svc ContractConnectorServiceHandler, opt
 // UnimplementedContractConnectorServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedContractConnectorServiceHandler struct{}
 
-func (UnimplementedContractConnectorServiceHandler) ContractConnect(context.Context, *connect.Request[v1.ContractConnectRequest]) (*connect.Response[v1.ContractConnectResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("protobuf.contract_connector.v1.ContractConnectorService.ContractConnect is not implemented"))
+func (UnimplementedContractConnectorServiceHandler) Hello(context.Context, *connect.Request[v1.HelloRequest]) (*connect.Response[v1.HelloResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("protobuf.contract_connector.v1.ContractConnectorService.Hello is not implemented"))
+}
+
+func (UnimplementedContractConnectorServiceHandler) Greet(context.Context, *connect.Request[v1.GreetRequest]) (*connect.Response[v1.GreetResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("protobuf.contract_connector.v1.ContractConnectorService.Greet is not implemented"))
+}
+
+func (UnimplementedContractConnectorServiceHandler) SetData(context.Context, *connect.Request[v1.SetDataRequest]) (*connect.Response[v1.SetDataResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("protobuf.contract_connector.v1.ContractConnectorService.SetData is not implemented"))
+}
+
+func (UnimplementedContractConnectorServiceHandler) GetData(context.Context, *connect.Request[v1.GetDataRequest]) (*connect.Response[v1.GetDataResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("protobuf.contract_connector.v1.ContractConnectorService.GetData is not implemented"))
+}
+
+func (UnimplementedContractConnectorServiceHandler) GetBalance(context.Context, *connect.Request[v1.GetBalanceRequest]) (*connect.Response[v1.GetBalanceResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("protobuf.contract_connector.v1.ContractConnectorService.GetBalance is not implemented"))
+}
+
+func (UnimplementedContractConnectorServiceHandler) Withdraw(context.Context, *connect.Request[v1.WithdrawRequest]) (*connect.Response[v1.WithdrawResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("protobuf.contract_connector.v1.ContractConnectorService.Withdraw is not implemented"))
 }
