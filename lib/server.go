@@ -80,7 +80,27 @@ func (s *ContractConnectServer) Greet(
 	ctx context.Context,
 	req *connect.Request[contract_connect_v1.GreetRequest],
 ) (*connect.Response[contract_connect_v1.GreetResponse], error) {
-	return nil, nil
+	log.Println("Request headers: ", req.Header())
+
+	// スマートコントラクトとの接続
+	conn, err := connectContract()
+	if err != nil {
+		return nil, err
+	}
+
+	// スマートコントラクトのメソッドを呼び出す例
+	reply, err := conn.Greet(&bind.CallOpts{
+		Context: ctx,
+	}, req.Msg.GetStr())
+	if err != nil {
+		return nil, err
+	}
+
+	res := connect.NewResponse(&contract_connect_v1.GreetResponse{
+		Str: reply,
+	})
+	res.Header().Set("Contract-Connect-Version", "v1")
+	return res, nil
 }
 
 func (s *ContractConnectServer) SetData(
