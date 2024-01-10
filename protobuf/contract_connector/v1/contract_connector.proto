@@ -4,11 +4,7 @@ package protobuf.contract_connector.v1;
 
 option go_package = "github.com/somasekimoto/geth-demo/gocode/protobuf/contract_connector/v1;contract_connectorv1";
 
-message HelloRequest {
-    string contract_address = 1;
-    string method_name = 2;
-    string method_params = 3;
-}
+message HelloRequest {}
 
 message HelloResponse {
     string result = 1;
@@ -27,8 +23,12 @@ message SetDataResponse{}
 message GetDataRequest{}
 message GetDataResponse{}
 
-message GetBalanceRequest{}
-message GetBalanceResponse{}
+message GetBalanceRequest{
+
+}
+message GetBalanceResponse{
+    string result = 1;
+}
 
 message WithdrawRequest{}
 message WithdrawResponse{}
