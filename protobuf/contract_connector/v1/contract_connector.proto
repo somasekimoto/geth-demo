@@ -36,7 +36,9 @@ message GetBalanceResponse{
 }
 
 message WithdrawRequest{}
-message WithdrawResponse{}
+message WithdrawResponse{
+    uint64 balance = 1;
+}
   
 service ContractConnectorService {
     rpc Hello(HelloRequest) returns (HelloResponse) {}
