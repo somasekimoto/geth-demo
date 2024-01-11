@@ -164,13 +164,6 @@ func (s *ContractConnectServer) SetData(
 	auth.GasTipCap = big.NewInt(2000000000)   // 優先料金（例：2 Gwei）
 	auth.GasFeeCap = big.NewInt(100000000000) // 最大料金（例：100 Gwei）
 
-	// address, tx, instance, err := contracts.SetData(auth, ethclient)
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// fmt.Println(address.Hex())
-
 	// スマートコントラクトのメソッドを呼び出す例
 	reply, err := conn.SetData(&bind.TransactOpts{
 		From:      auth.From,
@@ -199,7 +192,46 @@ func (s *ContractConnectServer) Withdraw(
 	ctx context.Context,
 	req *connect.Request[contract_connect_v1.WithdrawRequest],
 ) (*connect.Response[contract_connect_v1.WithdrawResponse], error) {
-	return nil, nil
+	log.Println("Request headers: ", req.Header())
+
+	// スマートコントラクトとの接続
+	conn, err := connectContract()
+	if err != nil {
+		return nil, err
+	}
+
+	auth, _, err := GetEthAuthConfig()
+	if err != nil {
+		panic(err)
+	}
+	auth.Value = big.NewInt(0)                // in wei
+	auth.GasTipCap = big.NewInt(2000000000)   // 優先料金（例：2 Gwei）
+	auth.GasFeeCap = big.NewInt(100000000000) // 最大料金（例：100 Gwei）
+
+	balance, err := conn.GetBalance(&bind.CallOpts{})
+
+	// スマートコントラクトのメソッドを呼び出す例
+	reply, err := conn.Withdraw(&bind.TransactOpts{
+		From:      auth.From,
+		Signer:    auth.Signer,
+		Value:     auth.Value,
+		Nonce:     auth.Nonce,
+		GasTipCap: auth.GasTipCap,
+		GasFeeCap: auth.GasFeeCap,
+		Context:   ctx,
+	})
+	log.Println("reply is", reply)
+
+	if err != nil {
+		return nil, err
+	}
+
+	res := connect.NewResponse(&contract_connect_v1.WithdrawResponse{
+		Balance: balance.Uint64(),
+	})
+	res.Header().Set("Contract-Connect-Version", "v1")
+	return res, nil
+
 }
 
 func Server() http.Handler {

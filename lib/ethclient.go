@@ -45,12 +45,7 @@ func GetEthAuthConfig() (*bind.TransactOpts, *ethclient.Client, error) {
 	if err != nil {
 		panic(err)
 	}
-	auth.Nonce = big.NewInt(int64(nonce))
-	// auth.Value = big.NewInt(0) // in wei
-	// // auth.GasLimit = uint64(3000000) // in units
-	// // auth.GasPrice = big.NewInt(1000000)
-	// auth.GasTipCap = big.NewInt(2000000000)   // 優先料金（例：2 Gwei）
-	// auth.GasFeeCap = big.NewInt(100000000000) // 最大料金（例：100 Gwei）
+	auth.Nonce = big.NewInt(int64(nonce)) // number of transactions sent by the signer
 
 	return auth, client, nil
 }
