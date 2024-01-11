@@ -17,17 +17,22 @@ message GreetResponse{
     string str = 1;
 }
 
-message SetDataRequest{}
-message SetDataResponse{}
+message SetDataRequest{
+    string data = 1;
+}
+message SetDataResponse{
+    bool result = 1;
+}
 
 message GetDataRequest{}
-message GetDataResponse{}
+message GetDataResponse{
+    string data = 1;
+}
 
 message GetBalanceRequest{
-
 }
 message GetBalanceResponse{
-    string result = 1;
+    uint64 result = 1;
 }
 
 message WithdrawRequest{}
