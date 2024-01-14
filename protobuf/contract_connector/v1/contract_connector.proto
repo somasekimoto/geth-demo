@@ -29,8 +29,7 @@ message GetDataResponse{
     string data = 1;
 }
 
-message GetBalanceRequest{
-}
+message GetBalanceRequest{}
 message GetBalanceResponse{
     uint64 result = 1;
 }
@@ -38,6 +37,17 @@ message GetBalanceResponse{
 message WithdrawRequest{}
 message WithdrawResponse{
     uint64 balance = 1;
+}
+
+message ReadReceiveEventRequest{
+    string contract_address = 1;
+    string event_name = 2;
+    string tx_hash = 3;
+}
+
+message ReadReceiveEventResponse{
+    string sender = 1;
+    string amount = 2;
 }
   
 service ContractConnectorService {
@@ -47,4 +57,5 @@ service ContractConnectorService {
     rpc GetData(GetDataRequest) returns (GetDataResponse){}
     rpc GetBalance(GetBalanceRequest) returns (GetBalanceResponse){}
     rpc Withdraw(WithdrawRequest) returns (WithdrawResponse){}
+    rpc ReadReceiveEvent(ReadReceiveEventRequest) returns (ReadReceiveEventResponse){}
 }

@@ -51,17 +51,21 @@ const (
 	// ContractConnectorServiceWithdrawProcedure is the fully-qualified name of the
 	// ContractConnectorService's Withdraw RPC.
 	ContractConnectorServiceWithdrawProcedure = "/protobuf.contract_connector.v1.ContractConnectorService/Withdraw"
+	// ContractConnectorServiceReadReceiveEventProcedure is the fully-qualified name of the
+	// ContractConnectorService's ReadReceiveEvent RPC.
+	ContractConnectorServiceReadReceiveEventProcedure = "/protobuf.contract_connector.v1.ContractConnectorService/ReadReceiveEvent"
 )
 
 // These variables are the protoreflect.Descriptor objects for the RPCs defined in this package.
 var (
-	contractConnectorServiceServiceDescriptor          = v1.File_protobuf_contract_connector_v1_contract_connector_proto.Services().ByName("ContractConnectorService")
-	contractConnectorServiceHelloMethodDescriptor      = contractConnectorServiceServiceDescriptor.Methods().ByName("Hello")
-	contractConnectorServiceGreetMethodDescriptor      = contractConnectorServiceServiceDescriptor.Methods().ByName("Greet")
-	contractConnectorServiceSetDataMethodDescriptor    = contractConnectorServiceServiceDescriptor.Methods().ByName("SetData")
-	contractConnectorServiceGetDataMethodDescriptor    = contractConnectorServiceServiceDescriptor.Methods().ByName("GetData")
-	contractConnectorServiceGetBalanceMethodDescriptor = contractConnectorServiceServiceDescriptor.Methods().ByName("GetBalance")
-	contractConnectorServiceWithdrawMethodDescriptor   = contractConnectorServiceServiceDescriptor.Methods().ByName("Withdraw")
+	contractConnectorServiceServiceDescriptor                = v1.File_protobuf_contract_connector_v1_contract_connector_proto.Services().ByName("ContractConnectorService")
+	contractConnectorServiceHelloMethodDescriptor            = contractConnectorServiceServiceDescriptor.Methods().ByName("Hello")
+	contractConnectorServiceGreetMethodDescriptor            = contractConnectorServiceServiceDescriptor.Methods().ByName("Greet")
+	contractConnectorServiceSetDataMethodDescriptor          = contractConnectorServiceServiceDescriptor.Methods().ByName("SetData")
+	contractConnectorServiceGetDataMethodDescriptor          = contractConnectorServiceServiceDescriptor.Methods().ByName("GetData")
+	contractConnectorServiceGetBalanceMethodDescriptor       = contractConnectorServiceServiceDescriptor.Methods().ByName("GetBalance")
+	contractConnectorServiceWithdrawMethodDescriptor         = contractConnectorServiceServiceDescriptor.Methods().ByName("Withdraw")
+	contractConnectorServiceReadReceiveEventMethodDescriptor = contractConnectorServiceServiceDescriptor.Methods().ByName("ReadReceiveEvent")
 )
 
 // ContractConnectorServiceClient is a client for the
@@ -73,6 +77,7 @@ type ContractConnectorServiceClient interface {
 	GetData(context.Context, *connect.Request[v1.GetDataRequest]) (*connect.Response[v1.GetDataResponse], error)
 	GetBalance(context.Context, *connect.Request[v1.GetBalanceRequest]) (*connect.Response[v1.GetBalanceResponse], error)
 	Withdraw(context.Context, *connect.Request[v1.WithdrawRequest]) (*connect.Response[v1.WithdrawResponse], error)
+	ReadReceiveEvent(context.Context, *connect.Request[v1.ReadReceiveEventRequest]) (*connect.Response[v1.ReadReceiveEventResponse], error)
 }
 
 // NewContractConnectorServiceClient constructs a client for the
@@ -122,17 +127,24 @@ func NewContractConnectorServiceClient(httpClient connect.HTTPClient, baseURL st
 			connect.WithSchema(contractConnectorServiceWithdrawMethodDescriptor),
 			connect.WithClientOptions(opts...),
 		),
+		readReceiveEvent: connect.NewClient[v1.ReadReceiveEventRequest, v1.ReadReceiveEventResponse](
+			httpClient,
+			baseURL+ContractConnectorServiceReadReceiveEventProcedure,
+			connect.WithSchema(contractConnectorServiceReadReceiveEventMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // contractConnectorServiceClient implements ContractConnectorServiceClient.
 type contractConnectorServiceClient struct {
-	hello      *connect.Client[v1.HelloRequest, v1.HelloResponse]
-	greet      *connect.Client[v1.GreetRequest, v1.GreetResponse]
-	setData    *connect.Client[v1.SetDataRequest, v1.SetDataResponse]
-	getData    *connect.Client[v1.GetDataRequest, v1.GetDataResponse]
-	getBalance *connect.Client[v1.GetBalanceRequest, v1.GetBalanceResponse]
-	withdraw   *connect.Client[v1.WithdrawRequest, v1.WithdrawResponse]
+	hello            *connect.Client[v1.HelloRequest, v1.HelloResponse]
+	greet            *connect.Client[v1.GreetRequest, v1.GreetResponse]
+	setData          *connect.Client[v1.SetDataRequest, v1.SetDataResponse]
+	getData          *connect.Client[v1.GetDataRequest, v1.GetDataResponse]
+	getBalance       *connect.Client[v1.GetBalanceRequest, v1.GetBalanceResponse]
+	withdraw         *connect.Client[v1.WithdrawRequest, v1.WithdrawResponse]
+	readReceiveEvent *connect.Client[v1.ReadReceiveEventRequest, v1.ReadReceiveEventResponse]
 }
 
 // Hello calls protobuf.contract_connector.v1.ContractConnectorService.Hello.
@@ -165,6 +177,11 @@ func (c *contractConnectorServiceClient) Withdraw(ctx context.Context, req *conn
 	return c.withdraw.CallUnary(ctx, req)
 }
 
+// ReadReceiveEvent calls protobuf.contract_connector.v1.ContractConnectorService.ReadReceiveEvent.
+func (c *contractConnectorServiceClient) ReadReceiveEvent(ctx context.Context, req *connect.Request[v1.ReadReceiveEventRequest]) (*connect.Response[v1.ReadReceiveEventResponse], error) {
+	return c.readReceiveEvent.CallUnary(ctx, req)
+}
+
 // ContractConnectorServiceHandler is an implementation of the
 // protobuf.contract_connector.v1.ContractConnectorService service.
 type ContractConnectorServiceHandler interface {
@@ -174,6 +191,7 @@ type ContractConnectorServiceHandler interface {
 	GetData(context.Context, *connect.Request[v1.GetDataRequest]) (*connect.Response[v1.GetDataResponse], error)
 	GetBalance(context.Context, *connect.Request[v1.GetBalanceRequest]) (*connect.Response[v1.GetBalanceResponse], error)
 	Withdraw(context.Context, *connect.Request[v1.WithdrawRequest]) (*connect.Response[v1.WithdrawResponse], error)
+	ReadReceiveEvent(context.Context, *connect.Request[v1.ReadReceiveEventRequest]) (*connect.Response[v1.ReadReceiveEventResponse], error)
 }
 
 // NewContractConnectorServiceHandler builds an HTTP handler from the service implementation. It
@@ -218,6 +236,12 @@ func NewContractConnectorServiceHandler(svc ContractConnectorServiceHandler, opt
 		connect.WithSchema(contractConnectorServiceWithdrawMethodDescriptor),
 		connect.WithHandlerOptions(opts...),
 	)
+	contractConnectorServiceReadReceiveEventHandler := connect.NewUnaryHandler(
+		ContractConnectorServiceReadReceiveEventProcedure,
+		svc.ReadReceiveEvent,
+		connect.WithSchema(contractConnectorServiceReadReceiveEventMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/protobuf.contract_connector.v1.ContractConnectorService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case ContractConnectorServiceHelloProcedure:
@@ -232,6 +256,8 @@ func NewContractConnectorServiceHandler(svc ContractConnectorServiceHandler, opt
 			contractConnectorServiceGetBalanceHandler.ServeHTTP(w, r)
 		case ContractConnectorServiceWithdrawProcedure:
 			contractConnectorServiceWithdrawHandler.ServeHTTP(w, r)
+		case ContractConnectorServiceReadReceiveEventProcedure:
+			contractConnectorServiceReadReceiveEventHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -263,4 +289,8 @@ func (UnimplementedContractConnectorServiceHandler) GetBalance(context.Context, 
 
 func (UnimplementedContractConnectorServiceHandler) Withdraw(context.Context, *connect.Request[v1.WithdrawRequest]) (*connect.Response[v1.WithdrawResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("protobuf.contract_connector.v1.ContractConnectorService.Withdraw is not implemented"))
+}
+
+func (UnimplementedContractConnectorServiceHandler) ReadReceiveEvent(context.Context, *connect.Request[v1.ReadReceiveEventRequest]) (*connect.Response[v1.ReadReceiveEventResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("protobuf.contract_connector.v1.ContractConnectorService.ReadReceiveEvent is not implemented"))
 }
