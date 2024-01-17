@@ -6,11 +6,23 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
 const PRIVATE_KEY = "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+
+func FromPrivateKeyToAddress(prvKey *ecdsa.PrivateKey) common.Address {
+	publicKey := prvKey.Public()
+	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
+	if !ok {
+		panic("invalid key")
+	}
+
+	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
+	return fromAddress
+}
 
 func GetEthAuthConfig() (*bind.TransactOpts, *ethclient.Client, error) {
 
@@ -24,13 +36,7 @@ func GetEthAuthConfig() (*bind.TransactOpts, *ethclient.Client, error) {
 		panic(err)
 	}
 
-	publicKey := privateKey.Public()
-	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
-	if !ok {
-		panic("invalid key")
-	}
-
-	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
+	fromAddress := FromPrivateKeyToAddress(privateKey)
 	nonce, err := client.PendingNonceAt(context.Background(), fromAddress)
 	if err != nil {
 		panic(err)

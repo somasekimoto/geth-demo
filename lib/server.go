@@ -2,12 +2,16 @@ package lib
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"math/big"
 	"net/http"
+	"strings"
 
 	"connectrpc.com/connect"
+	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -34,6 +38,15 @@ func connectContract() (*contracts.Helloworld, error) {
 		return nil, err
 	}
 	return contracts.NewHelloworld(common.HexToAddress(CONTRACT_ADDRESS), client)
+}
+
+func GetEthBalance(ownerAddress *common.Address, client *ethclient.Client, background context.Context) (*big.Int, error) {
+	account := common.HexToAddress(ownerAddress.String())
+	balance, err := client.BalanceAt(background, account, nil)
+	if err != nil {
+		return nil, err
+	}
+	return balance, nil
 }
 
 func (s *ContractConnectServer) Hello(
@@ -200,7 +213,7 @@ func (s *ContractConnectServer) Withdraw(
 		return nil, err
 	}
 
-	auth, _, err := GetEthAuthConfig()
+	auth, ethclient, err := GetEthAuthConfig()
 	if err != nil {
 		panic(err)
 	}
@@ -208,7 +221,12 @@ func (s *ContractConnectServer) Withdraw(
 	auth.GasTipCap = big.NewInt(2000000000)   // 優先料金（例：2 Gwei）
 	auth.GasFeeCap = big.NewInt(100000000000) // 最大料金（例：100 Gwei）
 
-	balance, err := conn.GetBalance(&bind.CallOpts{})
+	contractAddress := common.HexToAddress(CONTRACT_ADDRESS)
+
+	contractBalance, err := GetEthBalance(&contractAddress, ethclient, context.Background())
+	if err != nil {
+		return nil, err
+	}
 
 	// スマートコントラクトのメソッドを呼び出す例
 	reply, err := conn.Withdraw(&bind.TransactOpts{
@@ -226,12 +244,74 @@ func (s *ContractConnectServer) Withdraw(
 		return nil, err
 	}
 
+	afterBalance, err := GetEthBalance(&contractAddress, ethclient, context.Background())
+	if err != nil {
+		return nil, err
+	}
+
+	if afterBalance.Cmp(big.NewInt(0)) != 0 {
+		err = errors.New("failed to withdraw")
+		return nil, err
+	}
+
 	res := connect.NewResponse(&contract_connect_v1.WithdrawResponse{
-		Balance: balance.Uint64(),
+		Balance: contractBalance.String(),
 	})
 	res.Header().Set("Contract-Connect-Version", "v1")
 	return res, nil
 
+}
+
+type ReceivedEvent struct {
+	Sender common.Address
+	Amount *big.Int
+}
+
+func (s *ContractConnectServer) ReadReceiveEvent(
+	ctx context.Context,
+	req *connect.Request[contract_connect_v1.ReadReceiveEventRequest],
+) (*connect.Response[contract_connect_v1.ReadReceiveEventResponse], error) {
+	client, err := getEthClient()
+	if err != nil {
+		return nil, err
+	}
+
+	query := ethereum.FilterQuery{
+		Addresses: []common.Address{common.HexToAddress(CONTRACT_ADDRESS)},
+	}
+
+	logs, err := client.FilterLogs(context.Background(), query)
+	if err != nil {
+		return nil, err
+	}
+
+	contractAbi, err := abi.JSON(strings.NewReader(contracts.HelloworldABI)) // contracts.HelloWorldABIはあなたのコントラクトのABIです。
+	if err != nil {
+		return nil, err
+	}
+
+	// `Received`イベントのデータをデコード
+	event := new(ReceivedEvent)
+	log := logs[0]
+	err = contractAbi.UnpackIntoInterface(event, "Received", log.Data)
+	if err != nil {
+		return nil, err
+	}
+
+	// `Topics`から送信者アドレスを取得
+	if len(log.Topics) > 1 {
+		event.Sender = common.HexToAddress(log.Topics[1].Hex())
+		event.Amount = log.Topics[2].Big()
+	}
+
+	sender := event.Sender.String()
+	amount := event.Amount.Uint64()
+
+	res := connect.NewResponse(&contract_connect_v1.ReadReceiveEventResponse{
+		Sender: sender,
+		Amount: amount,
+	})
+	return res, nil
 }
 
 func Server() http.Handler {

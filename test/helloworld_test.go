@@ -111,6 +111,7 @@ func TestGetData(t *testing.T) {
 		t.Errorf("got %q, want %q", got, want)
 	}
 }
+
 func TestWriteTxDataFuncs(t *testing.T) {
 	t.Parallel()
 	mux := lib.Server()
@@ -151,8 +152,7 @@ func TestWriteTxDataFuncs(t *testing.T) {
 	t.Run("TestWithdraw", func(t *testing.T) {
 		t.Run("0 balance", func(t *testing.T) {
 
-			want := uint64(0)
-
+			want := "0"
 			res, err := client.Withdraw(context.Background(), &connect.Request[contract_connectorv1.WithdrawRequest]{})
 			if err != nil {
 				t.Error(err)
@@ -169,16 +169,14 @@ func TestWriteTxDataFuncs(t *testing.T) {
 				t.Error(err)
 			}
 
-			value := big.NewInt(100000000000000000)
-			auth.Value = value // 0.1 eth
+			value := big.NewInt(10000000000)
+			auth.Value = value
 
 			gasTipCap, err := ethclient.SuggestGasTipCap(context.Background())
 			if err != nil {
 				t.Error(err)
 			}
 			auth.GasTipCap = gasTipCap
-
-			// ベースフィーを超える最大料金を設定
 
 			gasFeeCap := gasTipCap.Mul(gasTipCap, big.NewInt(2))
 			auth.GasFeeCap = gasFeeCap
@@ -200,9 +198,9 @@ func TestWriteTxDataFuncs(t *testing.T) {
 				Nonce:     auth.Nonce.Uint64(),
 				GasFeeCap: gasFeeCap,
 				GasTipCap: gasTipCap,
-				Gas:       21000,
+				Gas:       300000,
 				To:        &toAddress,
-				Value:     value, // 1 ETH
+				Value:     auth.Value,
 			}
 
 			signedTx, err := types.SignNewTx(privateKey, types.NewCancunSigner(chainID), tx)
@@ -213,6 +211,19 @@ func TestWriteTxDataFuncs(t *testing.T) {
 			error := ethclient.SendTransaction(context.Background(), signedTx)
 			if error != nil {
 				t.Error(error)
+			}
+
+			res, err := client.Withdraw(context.Background(), &connect.Request[contract_connectorv1.WithdrawRequest]{})
+			if err != nil {
+				t.Error(err)
+			}
+
+			withdrawnAmount := res.Msg.GetBalance()
+			bigint := new(big.Int)
+			got, _ := bigint.SetString(withdrawnAmount, 10)
+			want := value
+			if got.Cmp(want) != 0 {
+				t.Errorf("got %q, want %q", got, want)
 			}
 		})
 	})
