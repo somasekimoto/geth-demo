@@ -47,7 +47,7 @@ message ReadReceiveEventRequest{
 
 message ReadReceiveEventResponse{
     string sender = 1;
-    uint64 amount = 2;
+    string amount = 2;
 }
   
 service ContractConnectorService {

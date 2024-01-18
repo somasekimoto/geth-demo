@@ -277,7 +277,7 @@ func (s *ContractConnectServer) ReadReceiveEvent(
 	}
 
 	query := ethereum.FilterQuery{
-		Addresses: []common.Address{common.HexToAddress(CONTRACT_ADDRESS)},
+		Addresses: []common.Address{common.HexToAddress(req.Msg.GetContractAddress())},
 	}
 
 	logs, err := client.FilterLogs(context.Background(), query)
@@ -293,7 +293,7 @@ func (s *ContractConnectServer) ReadReceiveEvent(
 	// `Received`イベントのデータをデコード
 	event := new(ReceivedEvent)
 	log := logs[0]
-	err = contractAbi.UnpackIntoInterface(event, "Received", log.Data)
+	err = contractAbi.UnpackIntoInterface(event, req.Msg.GetEventName(), log.Data)
 	if err != nil {
 		return nil, err
 	}
@@ -305,7 +305,7 @@ func (s *ContractConnectServer) ReadReceiveEvent(
 	}
 
 	sender := event.Sender.String()
-	amount := event.Amount.Uint64()
+	amount := event.Amount.String()
 
 	res := connect.NewResponse(&contract_connect_v1.ReadReceiveEventResponse{
 		Sender: sender,

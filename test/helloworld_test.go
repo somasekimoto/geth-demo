@@ -227,4 +227,75 @@ func TestWriteTxDataFuncs(t *testing.T) {
 			}
 		})
 	})
+
+	t.Run("TestReadReceivedEvent", func(t *testing.T) {
+		auth, ethclient, err := lib.GetEthAuthConfig()
+		if err != nil {
+			t.Error(err)
+		}
+
+		value := big.NewInt(10000000000)
+		auth.Value = value
+
+		gasTipCap, err := ethclient.SuggestGasTipCap(context.Background())
+		if err != nil {
+			t.Error(err)
+		}
+		auth.GasTipCap = gasTipCap
+
+		gasFeeCap := gasTipCap.Mul(gasTipCap, big.NewInt(2))
+		auth.GasFeeCap = gasFeeCap
+
+		chainID, err := ethclient.NetworkID(context.Background())
+		if err != nil {
+			t.Error(err)
+		}
+
+		privateKey, err := crypto.HexToECDSA(lib.PRIVATE_KEY)
+		if err != nil {
+			t.Error(err)
+		}
+
+		toAddress := common.HexToAddress(lib.CONTRACT_ADDRESS)
+
+		tx := &types.DynamicFeeTx{
+			ChainID:   chainID,
+			Nonce:     auth.Nonce.Uint64(),
+			GasFeeCap: gasFeeCap,
+			GasTipCap: gasTipCap,
+			Gas:       300000,
+			To:        &toAddress,
+			Value:     auth.Value,
+		}
+
+		signedTx, err := types.SignNewTx(privateKey, types.NewCancunSigner(chainID), tx)
+		if err != nil {
+			t.Error(err)
+		}
+
+		error := ethclient.SendTransaction(context.Background(), signedTx)
+		if error != nil {
+			t.Error(error)
+		}
+
+		res, err := client.ReadReceiveEvent(context.Background(), &connect.Request[contract_connectorv1.ReadReceiveEventRequest]{
+			Msg: &contract_connectorv1.ReadReceiveEventRequest{
+				ContractAddress: lib.CONTRACT_ADDRESS,
+				TxHash:          signedTx.Hash().Hex(),
+				EventName:       "Received",
+			},
+		})
+		if err != nil {
+			t.Error(err)
+		}
+
+		sender := res.Msg.GetSender()
+		amount := res.Msg.GetAmount()
+		if sender != auth.From.Hex() {
+			t.Errorf("got %q, want %q", sender, auth.From.Hex())
+		}
+		if amount != value.String() {
+			t.Errorf("got %q, want %q", amount, value.String())
+		}
+	})
 }
