@@ -4,6 +4,7 @@ import (
 	"context"
 	"math/big"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"connectrpc.com/connect"
@@ -51,20 +52,44 @@ func TestGreet(t *testing.T) {
 		server.URL,
 	)
 
-	want := "Gm World"
+	t.Run("SUCCESS", func(t *testing.T) {
+		want := "Gm World"
 
-	res, err := client.Greet(context.Background(), &connect.Request[contract_connectorv1.GreetRequest]{
-		Msg: &contract_connectorv1.GreetRequest{
-			Str: want,
-		},
+		res, err := client.Greet(context.Background(), &connect.Request[contract_connectorv1.GreetRequest]{
+			Msg: &contract_connectorv1.GreetRequest{
+				Str: want,
+			},
+		})
+		if err != nil {
+			t.Error(err)
+		}
+		got := res.Msg.GetStr()
+		if got != want {
+			t.Errorf("got %q, want %q", got, want)
+		}
 	})
-	if err != nil {
-		t.Error(err)
-	}
-	got := res.Msg.GetStr()
-	if got != want {
-		t.Errorf("got %q, want %q", got, want)
-	}
+
+	t.Run("[FAIL] revert when param is blanc string", func(t *testing.T) {
+
+		_, err := client.Greet(context.Background(), &connect.Request[contract_connectorv1.GreetRequest]{
+			Msg: &contract_connectorv1.GreetRequest{
+				Str: "",
+			},
+		})
+
+		if err == nil {
+			t.Error("Error does not occur")
+		}
+
+		want := "string must not be empty"
+
+		// gotがwantを含んでいれば成功
+		got := err.Error()
+		if !strings.Contains(got, want) {
+			t.Errorf("got %q, want %q", got, want)
+		}
+	})
+
 }
 
 func TestGetBalance(t *testing.T) {
